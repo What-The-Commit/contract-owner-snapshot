@@ -1,7 +1,7 @@
 {
-  "name": "metadoods-snapshot",
+  "name": "wtc-contract-owner-snapshot",
   "version": "1.0.0",
-  "description": "",
+  "description": " CLI Tool for taking a snapshot of unique owners from an ethereum contract",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
