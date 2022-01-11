@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# PHPStorm
+.idea
+
+# Unique owners txt
+unique_owners.txt
