@@ -1,6 +1,7 @@
 import ethers from 'ethers';
 import env from 'dotenv';
 import {RateLimit} from "async-sema";
+import filesystem from 'fs';
 
 env.config();
 
@@ -35,23 +36,23 @@ try {
 
 const contract = new ethers.Contract(
     contractAddress,
-    [
-        'function totalSupply() external view returns (uint256)',
-        'function ownerOf(uint256 tokenId) external view returns (address owner)',
-    ],
+    process.env.CONTRACT_ABI.split('-'),
     ethersProvider
 );
 
-const totalSupply = await contract.totalSupply();
+const totalSupplyFunction = contract[process.env.CONTRACT_TOTAL_SUPPLY];
+const ownerOfFunction = contract[process.env.CONTRACT_OWNER_OF];
+
+const totalSupply = await totalSupplyFunction();
 
 let startingTokenId = 0;
 
 try {
-    await contract.ownerOf(startingTokenId);
+    await ownerOfFunction(startingTokenId);
 } catch (e) {
     try {
         startingTokenId += 1;
-        await contract.ownerOf(startingTokenId);
+        await ownerOfFunction(startingTokenId);
     } catch (error) {
         console.error('Could not determine starting token id');
         process.exit();
@@ -60,18 +61,18 @@ try {
 
 let ownerCalls = [];
 
-const rateLimit = RateLimit(process.env.RATELIMIT);
+const rateLimit = RateLimit(process.env.RATELIMIT_MIN, {timeUnit: 60000, uniformDistribution: true});
 
 log('Starting at ' + startingTokenId + ' Total supply: ' + totalSupply, 'debug');
 
 for (let i = startingTokenId; i < totalSupply; i++) {
     await rateLimit();
 
-    let call = contract.ownerOf(i);
+    let call = ownerOfFunction(i);
 
     call.then(function (owner) {
         log('Found owner ' + owner + ' for ' + i, 'debug');
-    })
+    }).catch(error => console.error(error));
 
     ownerCalls.push(call);
 }
@@ -87,6 +88,6 @@ const uniqueOwners = [...new Set(owners)];
 
 log('Found ' + uniqueOwners.length + ' unique owners ('+totalSupply+')', 'info');
 
-uniqueOwners.forEach(owner => log(owner, 'info'));
+filesystem.writeFileSync('snapshots/' + contractAddress + '.json', JSON.stringify(uniqueOwners));
 
 process.exit();

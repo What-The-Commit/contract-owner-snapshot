@@ -108,3 +108,7 @@ dist
 
 # Unique owners txt
 unique_owners.txt
+
+merkletree.txt
+snapshots/*
+!**/*.gitkeep
