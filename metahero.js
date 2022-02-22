@@ -5,6 +5,8 @@ import filesystem from 'fs';
 
 env.config();
 
+const amount = parseInt(process.argv[2]);
+
 const ethersProvider = new ethers.providers.JsonRpcProvider(process.env.ETHERS_JSON_RPC_PROVIDER);
 
 const stakingContractAddress = '0x6ce31a42058F5496005b39272c21c576941DBfe9';
@@ -117,7 +119,16 @@ Promise.all(calls).then(async function (logs) {
     const allOwners = [...owners, ...uniqueStakedOwners];
     const allUniqueOwners = [...new Set(allOwners)];
 
+    const allowlistSpots = [];
+
+    for (const uniqueOwner of allUniqueOwners) {
+        allowlistSpots.push({
+            address: uniqueOwner,
+            amount: amount
+        });
+    }
+
     console.log('Found ' + allUniqueOwners.length + ' unique owners ('+totalSupply+')', 'info');
 
-    filesystem.writeFileSync('snapshots/' + contractAddress + '.json', JSON.stringify(allUniqueOwners));
+    filesystem.writeFileSync('snapshots/' + Date.now().toString() + '_' + contractAddress + '.json', JSON.stringify(allowlistSpots));
 });

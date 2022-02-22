@@ -26,6 +26,7 @@ function log(log, logLevel) {
 const ethersProvider = new ethers.providers.JsonRpcProvider(process.env.ETHERS_JSON_RPC_PROVIDER);
 
 let contractAddress = process.argv[2];
+const amount = parseInt(process.argv[3]);
 
 try {
     contractAddress = ethers.utils.getAddress(contractAddress);
@@ -88,6 +89,15 @@ const uniqueOwners = [...new Set(owners)];
 
 log('Found ' + uniqueOwners.length + ' unique owners ('+totalSupply+')', 'info');
 
-filesystem.writeFileSync('snapshots/' + contractAddress + '.json', JSON.stringify(uniqueOwners));
+const allowlistSpots = [];
+
+for (const uniqueOwner of uniqueOwners) {
+    allowlistSpots.push({
+        address: uniqueOwner,
+        amount: amount
+    });
+}
+
+filesystem.writeFileSync('snapshots/' + Date.now().toString() + '_' + contractAddress + '.json', JSON.stringify(allowlistSpots));
 
 process.exit();
