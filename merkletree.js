@@ -20,6 +20,6 @@ const leafNodes = allowlistSpots.map(function (allowlist) {
 });
 
 const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
-const merkleRoot = merkleTree.getRoot().toString('hex');
+const merkleRoot = '0x'+merkleTree.getRoot().toString('hex');
 
 filesystem.writeFileSync('merkletree.txt', 'Root hash: ' + merkleRoot + '\n\n' + merkleTree.toString());
